@@ -142,6 +142,164 @@ class YpayPaymentUI {
       container.appendChild(this._createAccountButton());
 
       appContainer.replaceChildren(container);
+
+      const css = document.createElement("style");
+      css.innerHTML = `
+        .* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-primary: #6047ff;
+  --text-black: #222222;
+  --text-gray: #909090;
+  --border-color: #e9e9e9;
+  --padding: 0.6rem;
+
+  --border: 1.5px solid var(--border-color);
+  --border-radius: 0.5rem;
+}
+
+body {
+  font-family: "Apple SD", "Segoe UI", sans-serif;
+  color: var(--text-black);
+  font-size: medium;
+  background-color: #f7fbff;
+}
+
+main {
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.contenair,
+.header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.contenair {
+  padding: 2rem 0;
+}
+
+.contenair .header {
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: var(--padding);
+  border-radius: var(--border-radius);
+  border: var(--border);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline-color: var(--color-primary);
+}
+
+.btn {
+  width: 100%;
+  padding: var(--padding);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: var(--padding);
+  border-radius: var(--border-radius);
+  border: none;
+  background-color: var(--color-primary);
+  cursor: pointer;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary:hover {
+  background-color: #1b0eab;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.btn-secondary {
+  background-color: white;
+  border: var(--border);
+  color: var(--text-black);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+}
+
+.otp-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.otp-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.otp-input {
+  width: 20px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.text-gray {
+  color: var(--text-gray);
+}
+
+.text-sm {
+  font-size: 0.8rem;
+}
+
+.card-input {
+  position: relative;
+}
+
+.card-input svg {
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  transform: translate(-50%, -50%);
+  color: var(--text-gray);
+}
+
+.card-input input {
+  padding-left: 48px;
+}
+
+.card label {
+  display: block;
+  padding-bottom: 0.6rem;
+}
+
+.card .error-message {
+  color: red;
+  font-size: 0.8rem;
+  padding-top: 0.4rem;
+}
+`;
+      document.head.appendChild(css);
     });
   }
 

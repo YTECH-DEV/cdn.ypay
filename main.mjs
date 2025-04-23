@@ -1,9 +1,9 @@
 const Lang = {
     current: "en",
-    setLang: (t) => {
-      Lang.current = t;
+    setLang: (n) => {
+      Lang.current = n;
     },
-    t: (t) => Lang[Lang.current][t] || t,
+    t: (n) => Lang[Lang.current][n] || n,
     en: {
       header_title: "Pay with Ypay",
       header_title_description: "Follow these steps to secure your payment.",
@@ -34,42 +34,42 @@ const Lang = {
       error_message: "Veuillez entrer un numéro de carte valide et un OTP.",
     },
   },
-  t = (t) => Lang.t(t);
+  t = (n) => Lang.t(n);
 class YpayPayment {
-  constructor(t) {
-    (this.config = { apiUrl: t.apiUrl, amount: t.amount, token: t.token }),
+  constructor(n) {
+    (this.config = { apiUrl: n.apiUrl, amount: n.amount, token: n.token }),
       (this.paymentHandlers = {
-        onSuccess: t.onSuccess || (() => {}),
-        onFailure: t.onFailure || (() => {}),
+        onSuccess: n.onSuccess || (() => {}),
+        onFailure: n.onFailure || (() => {}),
       });
   }
-  async processPayment(t) {
-    const e = {
+  async processPayment(n) {
+    const t = {
         amount: this.config.amount,
         token: this.config.token,
-        card_code: t.card_code,
-        otp: t.otp,
+        card_code: n.card_code,
+        otp: n.otp,
       },
-      n = this._validatePaymentData(e);
-    if (!n.valid) throw new Error(n.message);
+      e = this._validatePaymentData(t);
+    if (!e.valid) throw new Error(e.message);
     try {
-      const t = await fetch(this.config.apiUrl, {
+      const n = await fetch(this.config.apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Acept-Language": "en",
           },
-          body: JSON.stringify(e),
+          body: JSON.stringify(t),
         }),
-        n = await t.json();
-      if (t.ok) return this.paymentHandlers.onSuccess(n), n;
-      throw n;
-    } catch (t) {
-      throw (this.paymentHandlers.onFailure(t), t);
+        e = await n.json();
+      if (n.ok) return this.paymentHandlers.onSuccess(e), e;
+      throw e;
+    } catch (n) {
+      throw (this.paymentHandlers.onFailure(n), n);
     }
   }
-  _validatePaymentData(t) {
-    return !t.amount || isNaN(t.amount) || t.amount <= 0
+  _validatePaymentData(n) {
+    return !n.amount || isNaN(n.amount) || n.amount <= 0
       ? { valid: !1, message: "Invalid amount" }
       : { valid: !0 };
   }
@@ -78,44 +78,48 @@ class YpayPaymentUI {
   store = {
     card: "",
     otp: "",
-    setCard: (t) => {
-      this.store.card = t;
+    setCard: (n) => {
+      this.store.card = n;
     },
-    setOtp: (t) => {
-      this.store.otp = t;
+    setOtp: (n) => {
+      this.store.otp = n;
     },
     isValid: () =>
       this.store.card && this.store.otp && 4 === this.store.otp.length,
   };
-  constructor(t) {
-    (this.containerId = t.containerId),
-      (this.motif = t.motif),
-      (this.amount = t.amount),
-      (this.options = t);
+  constructor(n) {
+    (this.containerId = n.containerId),
+      (this.motif = n.motif),
+      (this.amount = n.amount),
+      (this.options = n);
   }
   init() {
     document.addEventListener("DOMContentLoaded", () => {
-      const t = document.getElementById(this.containerId);
-      if (!t)
+      const n = document.getElementById(this.containerId);
+      if (!n)
         return void console.error(
           `Container with id "${this.containerId}" not found`
         );
-      const e = document.createElement("div");
-      e.classList.add("contenair"),
-        e.appendChild(this._createHeader()),
-        e.appendChild(this._createCardInput()),
-        e.appendChild(this._createOtpContainer()),
-        e.appendChild(this._createSubmitButton()),
-        e.appendChild(this._createDivider()),
-        e.appendChild(this._createAccountButton()),
-        t.replaceChildren(e);
+      const t = document.createElement("div");
+      t.classList.add("contenair"),
+        t.appendChild(this._createHeader()),
+        t.appendChild(this._createCardInput()),
+        t.appendChild(this._createOtpContainer()),
+        t.appendChild(this._createSubmitButton()),
+        t.appendChild(this._createDivider()),
+        t.appendChild(this._createAccountButton()),
+        n.replaceChildren(t);
+      const e = document.createElement("style");
+      (e.innerHTML =
+        '\n        .* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\n:root {\n  --color-primary: #6047ff;\n  --text-black: #222222;\n  --text-gray: #909090;\n  --border-color: #e9e9e9;\n  --padding: 0.6rem;\n\n  --border: 1.5px solid var(--border-color);\n  --border-radius: 0.5rem;\n}\n\nbody {\n  font-family: "Apple SD", "Segoe UI", sans-serif;\n  color: var(--text-black);\n  font-size: medium;\n  background-color: #f7fbff;\n}\n\nmain {\n  width: 100%;\n  max-width: 350px;\n  margin: 0 auto;\n}\n\n.contenair,\n.header-container {\n  display: flex;\n  flex-direction: column;\n  gap: 2rem;\n  align-items: center;\n}\n\n.contenair {\n  padding: 2rem 0;\n}\n\n.contenair .header {\n  text-align: center;\n}\n\ninput {\n  width: 100%;\n  padding: var(--padding);\n  border-radius: var(--border-radius);\n  border: var(--border);\n  font-size: 1rem;\n  transition: all 0.3s ease;\n  outline-color: var(--color-primary);\n}\n\n.btn {\n  width: 100%;\n  padding: var(--padding);\n  border-radius: var(--border-radius);\n  border: none;\n  cursor: pointer;\n  color: white;\n  font-size: 1rem;\n  transition: all 0.3s ease;\n}\n\n.btn-primary {\n  width: 100%;\n  padding: var(--padding);\n  border-radius: var(--border-radius);\n  border: none;\n  background-color: var(--color-primary);\n  cursor: pointer;\n  color: white;\n  font-size: 1rem;\n  transition: all 0.3s ease;\n}\n\n.btn:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n.btn-primary:hover {\n  background-color: #1b0eab;\n}\n\n.w-full {\n  width: 100%;\n}\n\n.btn-secondary {\n  background-color: white;\n  border: var(--border);\n  color: var(--text-black);\n}\n\n.btn-secondary:hover {\n  background-color: var(--border-color);\n}\n\n.otp-container {\n  display: flex;\n  flex-direction: column;\n  gap: 0.8rem;\n}\n\n.otp-input {\n  display: flex;\n  gap: 0.5rem;\n}\n\n.otp-input {\n  width: 20px;\n  text-align: center;\n  font-size: 1rem;\n}\n\n.text-gray {\n  color: var(--text-gray);\n}\n\n.text-sm {\n  font-size: 0.8rem;\n}\n\n.card-input {\n  position: relative;\n}\n\n.card-input svg {\n  position: absolute;\n  top: 50%;\n  left: 24px;\n  transform: translate(-50%, -50%);\n  color: var(--text-gray);\n}\n\n.card-input input {\n  padding-left: 48px;\n}\n\n.card label {\n  display: block;\n  padding-bottom: 0.6rem;\n}\n\n.card .error-message {\n  color: red;\n  font-size: 0.8rem;\n  padding-top: 0.4rem;\n}\n'),
+        document.head.appendChild(e);
     });
   }
   _createHeader() {
-    const e = document.createElement("div");
+    const n = document.createElement("div");
     return (
-      e.classList.add("w-full", "header-container"),
-      (e.innerHTML = `\n      <img class="logo" src="logo.svg" height="40" />\n      <div class="header">\n        <div class="text-gray">${
+      n.classList.add("w-full", "header-container"),
+      (n.innerHTML = `\n      <img class="logo" src="logo.svg" height="40" />\n      <div class="header">\n        <div class="text-gray">${
         this.motif
       }</div>\n        <h2 class="amount">${new Intl.NumberFormat().format(
         this.amount
@@ -124,18 +128,18 @@ class YpayPaymentUI {
       )}</h2>\n        <p class="text-gray">${t(
         "header_title_description"
       )}</p>\n      </div>\n    `),
-      e
+      n
     );
   }
   _createCardInput() {
-    const e = document.createElement("div");
-    e.classList.add("card", "w-full");
-    const n = document.createElement("label");
-    n.setAttribute("for", "card"), (n.textContent = t("card"));
-    const a = document.createElement("div");
-    a.classList.add("card-input");
+    const n = document.createElement("div");
+    n.classList.add("card", "w-full");
+    const e = document.createElement("label");
+    e.setAttribute("for", "card"), (e.textContent = t("card"));
     const r = document.createElement("div");
-    r.innerHTML =
+    r.classList.add("card-input");
+    const a = document.createElement("div");
+    a.innerHTML =
       '\n      <svg\n        xmlns="http://www.w3.org/2000/svg"\n        width="24"\n        height="24"\n        viewBox="0 0 24 24"\n        fill="none"\n        stroke="currentColor"\n        stroke-width="2"\n        stroke-linecap="round"\n        stroke-linejoin="round"\n        class="lucide lucide-credit-card-icon lucide-credit-card"\n      >\n        <rect width="20" height="14" x="2" y="5" rx="2" />\n        <line x1="2" x2="22" y1="10" y2="10" />\n      </svg>\n    ';
     const o = document.createElement("input");
     return (
@@ -143,114 +147,114 @@ class YpayPaymentUI {
       (o.id = "card"),
       o.classList.add("input"),
       (o.placeholder = t("card_placeholder")),
-      o.addEventListener("input", (t) => {
-        this.store.setCard(t.target.value);
+      o.addEventListener("input", (n) => {
+        this.store.setCard(n.target.value);
       }),
-      a.appendChild(r),
-      a.appendChild(o),
-      e.appendChild(n),
-      e.appendChild(a),
-      e
+      r.appendChild(a),
+      r.appendChild(o),
+      n.appendChild(e),
+      n.appendChild(r),
+      n
     );
   }
-  _createOtpInput(t = 4) {
-    const e = [];
-    let n = Array(t).fill("");
-    const a = document.createElement("div");
-    a.classList.add("otp-input");
-    for (let r = 0; r < t; r++) {
+  _createOtpInput(n = 4) {
+    const t = [];
+    let e = Array(n).fill("");
+    const r = document.createElement("div");
+    r.classList.add("otp-input");
+    for (let a = 0; a < n; a++) {
       const o = document.createElement("input");
       (o.type = "text"),
         (o.maxLength = "1"),
         o.classList.add("otp-input"),
-        o.addEventListener("input", (a) => {
-          const s = a.target.value;
-          isNaN(s)
-            ? (o.value = n[r])
-            : ((n[r] = s),
-              s && r < t - 1 && e[r + 1] && e[r + 1].focus(),
-              n.every((t) => "" !== t) && this.store.setOtp(n.join("")));
+        o.addEventListener("input", (r) => {
+          const i = r.target.value;
+          isNaN(i)
+            ? (o.value = e[a])
+            : ((e[a] = i),
+              i && a < n - 1 && t[a + 1] && t[a + 1].focus(),
+              e.every((n) => "" !== n) && this.store.setOtp(e.join("")));
         }),
-        o.addEventListener("keydown", (t) => {
-          "Backspace" === t.key &&
-            (!n[r] && r > 0 && e[r - 1] && e[r - 1].focus(),
-            (n[r] = ""),
-            (e[r].value = ""));
+        o.addEventListener("keydown", (n) => {
+          "Backspace" === n.key &&
+            (!e[a] && a > 0 && t[a - 1] && t[a - 1].focus(),
+            (e[a] = ""),
+            (t[a].value = ""));
         }),
         o.addEventListener("focus", () => {
-          e[r].select();
+          t[a].select();
         }),
-        e.push(o),
-        a.appendChild(o);
+        t.push(o),
+        r.appendChild(o);
     }
-    return a;
+    return r;
   }
   _createOtpContainer() {
-    const e = document.createElement("div");
-    e.classList.add("otp-container", "w-full");
-    const n = document.createElement("label");
-    n.textContent = t("otp");
-    const a = document.createElement("p");
+    const n = document.createElement("div");
+    n.classList.add("otp-container", "w-full");
+    const e = document.createElement("label");
+    e.textContent = t("otp");
+    const r = document.createElement("p");
     return (
-      a.classList.add("text-gray", "text-sm"),
-      (a.textContent = t("otp_description")),
-      e.appendChild(n),
-      e.appendChild(this._createOtpInput()),
-      e.appendChild(a),
-      e
+      r.classList.add("text-gray", "text-sm"),
+      (r.textContent = t("otp_description")),
+      n.appendChild(e),
+      n.appendChild(this._createOtpInput()),
+      n.appendChild(r),
+      n
     );
   }
-  _showError(t) {
-    const e = document.createElement("div");
-    e.classList.add("error-message"), (e.textContent = t);
-    const n = document.querySelector(`#${this.containerId} .card`);
-    this._removeError(), n.appendChild(e);
+  _showError(n) {
+    const t = document.createElement("div");
+    t.classList.add("error-message"), (t.textContent = n);
+    const e = document.querySelector(`#${this.containerId} .card`);
+    this._removeError(), e.appendChild(t);
   }
   _removeError() {
-    const t = document.querySelector(`#${this.containerId} .error-message`);
-    t && t.remove();
+    const n = document.querySelector(`#${this.containerId} .error-message`);
+    n && n.remove();
   }
-  async _onSubmit(e) {
-    const n = this.store.card,
-      a = this.store.otp;
+  async _onSubmit(n) {
+    const e = this.store.card,
+      r = this.store.otp;
     if (this.store.isValid()) {
       this._removeError(),
-        (e.disabled = !0),
-        (e.textContent = t("btn_proccessing"));
+        (n.disabled = !0),
+        (n.textContent = t("btn_proccessing"));
       try {
-        const t = new YpayPayment(this.options);
-        await t.processPayment({ card_code: n, otp: a });
-      } catch (e) {
-        this._showError(e.message || t("error_message"));
+        const n = new YpayPayment(this.options);
+        await n.processPayment({ card_code: e, otp: r });
+      } catch (n) {
+        this._showError(n.message || t("error_message"));
       } finally {
-        (e.disabled = !1), (e.textContent = t("btn_pay_now"));
+        (n.disabled = !1), (n.textContent = t("btn_pay_now"));
       }
     } else this._showError(t("error_message"));
   }
   _createSubmitButton() {
-    const e = document.createElement("button");
+    const n = document.createElement("button");
     return (
-      e.classList.add("btn", "btn-primary"),
-      (e.textContent = t("btn_pay_now")),
-      e.addEventListener("click", () => {
-        this._onSubmit(e);
+      n.classList.add("btn", "btn-primary"),
+      (n.textContent = t("btn_pay_now")),
+      n.addEventListener("click", () => {
+        this._onSubmit(n);
       }),
-      e
+      n
     );
   }
   _createDivider() {
-    const e = document.createElement("div");
-    return e.classList.add("divider"), (e.textContent = t("or")), e;
+    const n = document.createElement("div");
+    return n.classList.add("divider"), (n.textContent = t("or")), n;
   }
   _createAccountButton() {
-    const e = document.createElement("button");
+    const n = document.createElement("button");
     return (
-      e.classList.add("btn", "btn-secondary", "account-btn"),
-      (e.textContent = t("create_account")),
-      e.addEventListener("click", () => {
+      n.classList.add("btn", "btn-secondary", "account-btn"),
+      (n.textContent = t("create_account")),
+      n.addEventListener("click", () => {
         console.log("Create account clicked");
       }),
-      e
+      n
     );
   }
 }
@@ -269,8 +273,8 @@ const YPay = new (class {
   _render() {
     Lang.setLang(this.config.lang), new YpayPaymentUI(this.config).init();
   }
-  setConfig(t) {
-    (this.config = { ...this.config, ...t }), this._render();
+  setConfig(n) {
+    (this.config = { ...this.config, ...n }), this._render();
   }
 })();
 export default YPay;
