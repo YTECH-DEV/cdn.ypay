@@ -143,8 +143,9 @@ class YpayPaymentUI {
 
       appContainer.replaceChildren(container);
 
-      const css = document.createElement("style");
-      css.innerHTML = `
+      const style = document.createElement("style");
+      style.setAttribute("id", "ypay-style");
+      style.innerHTML = `
         .* {
   margin: 0;
   padding: 0;
@@ -299,7 +300,9 @@ input {
   padding-top: 0.4rem;
 }
 `;
-      document.head.appendChild(css);
+      if (!document.getElementById("ypay-style")) {
+        document.head.append(style);
+      }
     });
   }
 
