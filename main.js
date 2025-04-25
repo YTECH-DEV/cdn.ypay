@@ -538,6 +538,20 @@ const YPay = new (class {
     this.modal = new AccessibleModal({
       closeOnEscape: false,
     });
+    this.button = document.getElementById("ypay-button");
+
+    this._init();
+  }
+
+  _init() {
+    if (!this.button) {
+      console.error(`Button with ID "${this.config.buttonId}" not found.`);
+      return;
+    }
+
+    this.button.addEventListener("click", () => {
+      this._open();
+    });
   }
 
   setConfig(options) {
@@ -545,7 +559,7 @@ const YPay = new (class {
     this._update();
   }
 
-  open() {
+  _open() {
     this.modal.open(this.paymentUI.content());
   }
 
@@ -563,17 +577,10 @@ document.head.appendChild(style);
 
 export default YPay;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const openButton = document.getElementById("ypay-button");
-
-  openButton.addEventListener("click", () => {
-    YPay.open();
-  });
-});
-
 // Example usage
 YPay.setConfig({
   title: "Payment for order #12345",
+  lang: "fr",
   amount: 500,
   token: "projectn7oowh0ajrikqh7gkizlenemupscgrhzpabkmc14xehd",
   onSuccess: (response) => {
