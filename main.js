@@ -10,8 +10,6 @@ const Lang = {
   },
 
   en: {
-    header_title: "Pay with Ypay",
-    header_title_description: "Follow these steps to secure your payment.",
     card: "Card number",
     card_placeholder: "Enter your card number",
     otp: "Enter OTP",
@@ -24,9 +22,6 @@ const Lang = {
     error_message: "Please enter a valid card number and OTP.",
   },
   fr: {
-    header_title: "Payer avec Ypay",
-    header_title_description:
-      "Suivez ces étapes pour sécuriser votre paiement.",
     card: "Numéro de carte",
     otp: "Entrez l'OTP",
     card_placeholder: "Entrez votre numéro de carte",
@@ -47,7 +42,7 @@ const t = (key) => {
 class YpayPayment {
   constructor(options) {
     this.config = {
-      apiUrl: options.apiUrl,
+      apiUrl: "http://127.0.0.1:8000/api/v1/app/checkout",
       amount: options.amount,
       token: options.token,
     };
@@ -102,6 +97,181 @@ class YpayPayment {
   }
 }
 
+class AccessibleModal {
+  constructor(options = {}) {
+    // Default options
+    this.options = {
+      closeOnEscape: true,
+      closeOnOverlayClick: true,
+      ariaLabelledBy: "modal-title",
+      ariaDescribedBy: "modal-description",
+      ...options,
+    };
+
+    // Store elements that need to be accessible after closing
+    this.previouslyFocusedElement = null;
+
+    // Create modal elements
+    this.createModalElements();
+
+    // Initialize event listeners
+    this.initEventListeners();
+  }
+
+  createModalElements() {
+    // Create overlay
+    this.overlay = document.createElement("div");
+    this.overlay.className = "ypay-modal-overlay";
+    this.overlay.setAttribute("tabindex", "-1");
+
+    // Create modal container
+    this.modal = document.createElement("div");
+    this.modal.className = "ypay-modal";
+    this.modal.setAttribute("role", "dialog");
+    this.modal.setAttribute("aria-modal", "true");
+
+    if (this.options.ariaLabelledBy) {
+      this.modal.setAttribute("aria-labelledby", this.options.ariaLabelledBy);
+    }
+
+    if (this.options.ariaDescribedBy) {
+      this.modal.setAttribute("aria-describedby", this.options.ariaDescribedBy);
+    }
+
+    // Create close button
+    this.closeButton = document.createElement("button");
+    this.closeButton.className = "ypay-modal-close";
+    this.closeButton.setAttribute("aria-label", "Close modal");
+    this.closeButton.innerHTML = "&times;";
+
+    // Create content container
+    this.content = document.createElement("div");
+    this.content.setAttribute("id", "ypay-app");
+
+    // Assemble the modal structure
+    this.modal.appendChild(this.closeButton);
+    this.modal.appendChild(this.content);
+    this.overlay.appendChild(this.modal);
+  }
+
+  initEventListeners() {
+    // Close button event
+    this.closeButton.addEventListener("click", () => this.close());
+
+    // Close on ESC key press
+    if (this.options.closeOnEscape) {
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this.isOpen) {
+          this.close();
+        }
+      });
+    }
+
+    // Close on overlay click
+    if (this.options.closeOnOverlayClick) {
+      this.overlay.addEventListener("click", (e) => {
+        if (e.target === this.overlay) {
+          this.close();
+        }
+      });
+    }
+
+    // Trap focus inside modal
+    this.modal.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        this.handleTabKey(e);
+      }
+    });
+  }
+
+  open(content) {
+    // Store the element that had focus before opening modal
+    this.previouslyFocusedElement = document.activeElement;
+
+    // Add content to the modal
+    if (typeof content === "string") {
+      this.content.innerHTML = content;
+    } else if (content instanceof HTMLElement) {
+      this.content.innerHTML = "";
+      this.content.appendChild(content);
+    }
+
+    // Add modal to the DOM
+    document.body.appendChild(this.overlay);
+
+    // Add class to prevent body scrolling
+    document.body.classList.add("ypay-modal-open");
+
+    // Set focus to the first focusable element
+    setTimeout(() => {
+      const focusableElements = this.getFocusableElements();
+      if (focusableElements.length) {
+        focusableElements[0].focus();
+      } else {
+        this.modal.focus();
+      }
+    }, 50);
+
+    this.isOpen = true;
+  }
+
+  close() {
+    if (!this.isOpen) return;
+
+    // Remove modal from DOM
+    document.body.removeChild(this.overlay);
+
+    // Remove class from body
+    document.body.classList.remove("ypay-modal-open");
+
+    // Restore focus to the previously focused element
+    if (this.previouslyFocusedElement) {
+      this.previouslyFocusedElement.focus();
+    }
+
+    this.isOpen = false;
+  }
+
+  handleTabKey(e) {
+    const focusableElements = this.getFocusableElements();
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    // If no focusable elements, do nothing
+    if (focusableElements.length === 0) return;
+
+    // Handle Tab key to trap focus inside the modal
+    if (e.shiftKey) {
+      // If shift+tab and first element is active, move to last element
+      if (document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      }
+    } else {
+      // If tab and last element is active, move to first element
+      if (document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    }
+  }
+
+  getFocusableElements() {
+    // Select all focusable elements inside the modal
+    const focusableSelectors = [
+      "button:not([disabled])",
+      "[href]",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      '[tabindex]:not([tabindex="-1"])',
+    ];
+
+    const selector = focusableSelectors.join(",");
+    return Array.from(this.modal.querySelectorAll(selector));
+  }
+}
+
 class YpayPaymentUI {
   store = {
     card: "",
@@ -117,208 +287,38 @@ class YpayPaymentUI {
   };
 
   constructor(options) {
-    this.containerId = options.containerId;
-    this.motif = options.motif;
+    this.title = options.title;
     this.amount = options.amount;
     this.options = options;
+    this.devise = options.devise || "F";
+    this.containerId = "ypay-app";
   }
 
-  init() {
-    document.addEventListener("DOMContentLoaded", () => {
-      const appContainer = document.getElementById(this.containerId);
-      if (!appContainer) {
-        console.error(`Container with id "${this.containerId}" not found`);
-        return;
-      }
+  content() {
+    const container = document.createElement("div");
+    container.classList.add("ypay-contenair");
 
-      const container = document.createElement("div");
-      container.classList.add("contenair");
+    container.appendChild(this._createHeader());
+    container.appendChild(this._createCardInput());
+    container.appendChild(this._createOtpContainer());
+    container.appendChild(this._createSubmitButton());
+    container.appendChild(this._createDivider());
+    container.appendChild(this._createAccountButton());
 
-      container.appendChild(this._createHeader());
-      container.appendChild(this._createCardInput());
-      container.appendChild(this._createOtpContainer());
-      container.appendChild(this._createSubmitButton());
-      container.appendChild(this._createDivider());
-      container.appendChild(this._createAccountButton());
-
-      appContainer.replaceChildren(container);
-
-      const style = document.createElement("style");
-      style.setAttribute("id", "ypay-style");
-      style.innerHTML = `
-        .* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --color-primary: #6047ff;
-  --text-black: #222222;
-  --text-gray: #909090;
-  --border-color: #e9e9e9;
-  --padding: 0.6rem;
-
-  --border: 1.5px solid var(--border-color);
-  --border-radius: 0.5rem;
-}
-
-body {
-  font-family: "Apple SD", "Segoe UI", sans-serif;
-  color: var(--text-black);
-  font-size: medium;
-  background-color: #f7fbff;
-}
-
-main {
-  width: 100%;
-  max-width: 350px;
-  margin: 0 auto;
-}
-
-.contenair,
-.header-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: center;
-}
-
-.contenair {
-  padding: 2rem 0;
-}
-
-.contenair .header {
-  text-align: center;
-}
-
-input {
-  width: 100%;
-  padding: var(--padding);
-  border-radius: var(--border-radius);
-  border: var(--border);
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  outline-color: var(--color-primary);
-}
-
-.btn {
-  width: 100%;
-  padding: var(--padding);
-  border-radius: var(--border-radius);
-  border: none;
-  cursor: pointer;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: var(--padding);
-  border-radius: var(--border-radius);
-  border: none;
-  background-color: var(--color-primary);
-  cursor: pointer;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary:hover {
-  background-color: #1b0eab;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.btn-secondary {
-  background-color: white;
-  border: var(--border);
-  color: var(--text-black);
-}
-
-.btn-secondary:hover {
-  background-color: var(--border-color);
-}
-
-.otp-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.otp-input {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.otp-input {
-  width: 20px;
-  text-align: center;
-  font-size: 1rem;
-}
-
-.text-gray {
-  color: var(--text-gray);
-}
-
-.text-sm {
-  font-size: 0.8rem;
-}
-
-.card-input {
-  position: relative;
-}
-
-.card-input svg {
-  position: absolute;
-  top: 50%;
-  left: 24px;
-  transform: translate(-50%, -50%);
-  color: var(--text-gray);
-}
-
-.card-input input {
-  padding-left: 48px;
-}
-
-.card label {
-  display: block;
-  padding-bottom: 0.6rem;
-}
-
-.card .error-message {
-  color: red;
-  font-size: 0.8rem;
-  padding-top: 0.4rem;
-}
-`;
-      if (!document.getElementById("ypay-style")) {
-        document.head.append(style);
-      }
-    });
+    return container;
   }
 
   _createHeader() {
     const headerContainer = document.createElement("div");
-    headerContainer.classList.add("w-full", "header-container");
+    headerContainer.classList.add("ypay-w-full", "ypay-header-container");
 
     headerContainer.innerHTML = `
       <img class="logo" src="logo.svg" height="40" />
-      <div class="header">
-        <div class="text-gray">${this.motif}</div>
-        <h2 class="amount">${new Intl.NumberFormat().format(this.amount)} F</h2>
-      </div>
-      <div class="w-full">
-        <h2>${t("header_title")}</h2>
-        <p class="text-gray">${t("header_title_description")}</p>
+      <div class="ypay-header">
+        <div class="text-gray title">${this.title}</div>
+        <h2 class="amount">${new Intl.NumberFormat().format(this.amount)} ${
+      this.devise
+    }</h2>
       </div>
     `;
 
@@ -327,14 +327,14 @@ input {
 
   _createCardInput() {
     const cardContainer = document.createElement("div");
-    cardContainer.classList.add("card", "w-full");
+    cardContainer.classList.add("ypay-card", "ypay-w-full");
 
     const label = document.createElement("label");
     label.setAttribute("for", "card");
     label.textContent = t("card");
 
     const cardInputContainer = document.createElement("div");
-    cardInputContainer.classList.add("card-input");
+    cardInputContainer.classList.add("ypay-card-input");
 
     const svgContainer = document.createElement("div");
     svgContainer.innerHTML = `
@@ -358,7 +358,7 @@ input {
     const input = document.createElement("input");
     input.type = "text";
     input.id = "card";
-    input.classList.add("input");
+    input.classList.add("ypay-input");
     input.placeholder = t("card_placeholder");
 
     input.addEventListener("input", (event) => {
@@ -378,13 +378,13 @@ input {
     const inputs = [];
     let otpValue = Array(length).fill("");
     const otpContainer = document.createElement("div");
-    otpContainer.classList.add("otp-input");
+    otpContainer.classList.add("ypay-otp");
 
     for (let i = 0; i < length; i++) {
       const input = document.createElement("input");
       input.type = "text";
       input.maxLength = "1";
-      input.classList.add("otp-input");
+      input.classList.add("ypay-otp-input");
 
       input.addEventListener("input", (event) => {
         const value = event.target.value;
@@ -428,13 +428,13 @@ input {
 
   _createOtpContainer() {
     const container = document.createElement("div");
-    container.classList.add("otp-container", "w-full");
+    container.classList.add("ypay-otp-container", "ypay-w-full");
 
     const label = document.createElement("label");
     label.textContent = t("otp");
 
     const description = document.createElement("p");
-    description.classList.add("text-gray", "text-sm");
+    description.classList.add("ypay-text-gray", "ypay-text-sm");
     description.textContent = t("otp_description");
 
     container.appendChild(label);
@@ -446,16 +446,20 @@ input {
 
   _showError(message) {
     const error = document.createElement("div");
-    error.classList.add("error-message");
+    error.classList.add("ypay-error-message");
     error.textContent = message;
 
-    const cardContainer = document.querySelector(`#${this.containerId} .card`);
+    const otpContainer = document.querySelector(
+      `#${this.containerId} .ypay-otp-container`
+    );
     this._removeError();
-    cardContainer.appendChild(error);
+    otpContainer.append(error);
   }
 
   _removeError() {
-    const error = document.querySelector(`#${this.containerId} .error-message`);
+    const error = document.querySelector(
+      `#${this.containerId} .ypay-error-message`
+    );
     if (error) {
       error.remove();
     }
@@ -490,7 +494,7 @@ input {
 
   _createSubmitButton() {
     const button = document.createElement("button");
-    button.classList.add("btn", "btn-primary");
+    button.classList.add("ypay-btn", "ypay-btn-primary");
     button.textContent = t("btn_pay_now");
 
     button.addEventListener("click", () => {
@@ -502,14 +506,14 @@ input {
 
   _createDivider() {
     const divider = document.createElement("div");
-    divider.classList.add("divider");
+    divider.classList.add("ypay-divider");
     divider.textContent = t("or");
     return divider;
   }
 
   _createAccountButton() {
     const button = document.createElement("button");
-    button.classList.add("btn", "btn-secondary", "account-btn");
+    button.classList.add("ypay-btn", "ypay-btn-secondary", "ypay-account-btn");
     button.textContent = t("create_account");
 
     button.addEventListener("click", () => {
@@ -523,35 +527,53 @@ input {
 
 const YPay = new (class {
   config = {
-    containerId: "ypay",
     amount: 0,
     token: null,
-    motif: "",
-    apiUrl: "http://127.0.0.1:8000/api/v1/app/checkout",
+    title: "",
     lang: "en",
   };
 
   constructor() {
-    this._render();
-  }
-
-  _render() {
-    Lang.setLang(this.config.lang);
-    new YpayPaymentUI(this.config).init();
+    this.paymentUI = new YpayPaymentUI(this.config);
+    this.modal = new AccessibleModal({
+      closeOnEscape: false,
+    });
   }
 
   setConfig(options) {
     this.config = { ...this.config, ...options };
-    this._render();
+    this._update();
+  }
+
+  open() {
+    this.modal.open(this.paymentUI.content());
+  }
+
+  _update() {
+    Lang.setLang(this.config.lang);
+    this.paymentUI = new YpayPaymentUI(this.config);
   }
 })();
 
+const style = document.createElement("style");
+style.textContent = `
+
+`;
+document.head.appendChild(style);
+
 export default YPay;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const openButton = document.getElementById("ypay-button");
+
+  openButton.addEventListener("click", () => {
+    YPay.open();
+  });
+});
 
 // Example usage
 YPay.setConfig({
-  lang: "fr",
-  motif: "Payment for order #12345",
+  title: "Payment for order #12345",
   amount: 500,
   token: "projectn7oowh0ajrikqh7gkizlenemupscgrhzpabkmc14xehd",
   onSuccess: (response) => {

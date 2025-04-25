@@ -2,25 +2,38 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <!-- <link rel="stylesheet" href="style.css" /> -->
-    <!-- <script type="module" src="main.js"></script> -->
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="main.js"></script>
+    <!-- <script type="module" src="modal.js"></script> -->
   </head>
   <body>
-    <main id="ypay"></main>
+    <div style="display: grid; place-content: center; height: 100dvh">
+      <button
+        style="width: 170px"
+        class="ypay-btn ypay-btn-primary"
+        id="ypay-button"
+      >
+        <img src="logo_short.svg" width="20" />
+        <span>Pay with YPay</span>
+      </button>
+    </div>
   </body>
   <script type="module">
-    import YPay from "https://cdn.jsdelivr.net/gh/YTECH-DEV/cdn.ypay@development/main.js";
+    // import YPay from "https://cdn.jsdelivr.net/gh/YTECH-DEV/cdn.ypay@development/main.mjs";
 
-    YPay.setConfig({
-      motif: "Payment for your order",
-      amount: 500,
-      token: "projectn7oowh0ajrikqh7gkizlenemupscgrhzpabkmc14xehd",
-      onSuccess: (response) => {
-        console.log("Payment successful:", response);
-      },
-      onFailure: (error) => {
-        console.error("Payment failed:", error);
-      },
-    });
+    // import YPay from "http://127.0.0.1:8000/cdn.ypay.js";
+
+    // YPay.setConfig({
+    //   lang: "fr",
+    //   motif: "Payment for your order",
+    //   amount: 500,
+    //   token: "projectn7oowh0ajrikqh7gkizlenemupscgrhzpabkmc14xehd",
+    //   onSuccess: (response) => {
+    //     console.log("Payment successful:", response);
+    //   },
+    //   onFailure: (error) => {
+    //     console.error("Payment failed:", error);
+    //   },
+    // });
   </script>
 </html>
