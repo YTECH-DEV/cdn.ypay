@@ -13,7 +13,7 @@
 - [Accessibility Features](#accessibility-features)
 - [Troubleshooting](#troubleshooting)
 
-## Introduction
+## IntroductionN
 
 YPay is a JavaScript library that provides an accessible payment modal for processing payments. The library offers a customizable UI with multi-language support and proper accessibility features.
 

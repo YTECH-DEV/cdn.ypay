@@ -42,7 +42,7 @@ const t = (key) => {
 class YpayPayment {
   constructor(options) {
     this.config = {
-      apiUrl: "http://127.0.0.1:8000/api/v1/app/checkout",
+      apiUrl: "http://127.0.0.1:8000/api/v1/project/make-payment",
       amount: options.amount,
       token: options.token,
     };
@@ -55,9 +55,8 @@ class YpayPayment {
   async processPayment(paymentData) {
     const data = {
       amount: this.config.amount,
-      token: this.config.token,
       card_code: paymentData.card_code,
-      otp: paymentData.otp,
+      payment_code: paymentData.otp,
     };
 
     const validation = this._validatePaymentData(data);
@@ -71,6 +70,7 @@ class YpayPayment {
         headers: {
           "Content-Type": "application/json",
           "Acept-Language": "en",
+          Authorization: `Bearer ${this.config.token}`,
         },
         body: JSON.stringify(data),
       });
